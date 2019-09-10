@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <profile name="sbt 1" modules="myservice_8852" />
+    <profile name="sbt 2" modules="myservice">
+      <option name="higherKinds" value="true" />
+      <option name="deprecationWarnings" value="true" />
+      <option name="featureWarnings" value="true" />
+      <parameters>
+        <parameter value="-Xlint" />
+        <parameter value="-Ywarn-dead-code" />
+        <parameter value="-Ywarn-value-discard" />
+        <parameter value="-Ywarn-unused" />
+        <parameter value="-Ypartial-unification" />
+        <parameter value="-Ywarn-unused-import" />
+        <parameter value="-Yrangepos" />
+      </parameters>
+      <plugins>
+        <plugin path="$USER_HOME$/.ivy2/cache/org.spire-math/kind-projector_2.12/jars/kind-projector_2.12-0.9.6.jar" />
+        <plugin path="$USER_HOME$/.ivy2/cache/com.olegpy/better-monadic-for_2.12/jars/better-monadic-for_2.12-0.2.4.jar" />
+        <plugin path="$USER_HOME$/.ivy2/cache/org.scalamacros/paradise_2.12.8/jars/paradise_2.12.8-2.1.1.jar" />
+        <plugin path="$USER_HOME$/.ivy2/cache/org.scalameta/semanticdb-scalac_2.12.8/jars/semanticdb-scalac_2.12.8-4.1.9.jar" />
+      </plugins>
+    </profile>
+  </component>
+</project>

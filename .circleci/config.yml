@@ -1,0 +1,97 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: $DOCKER_REGISTRY/shared/java8-sbt:master
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    environment:
+      OUTPUT_DIR: /tmp/output/myservice
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "68:7b:13:9f:ba:78:fc:70:26:cd:cd:55:5c:88:a5:2f"
+
+      - restore_cache:
+          keys:
+            - cache-{{ .Branch }}
+            - cache-
+
+      - run:
+          name: Build
+          command: |
+            sbt clean "scalafix --check" test package stage
+
+      - save_cache:
+          key: cache-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - "~/.ivy2/cache"
+            - "~/.sbt"
+            - "~/.m2"
+
+      - run:
+          name: Copy artifacts
+          command: |
+            mkdir -p "${OUTPUT_DIR}"
+            cp Dockerfile "${OUTPUT_DIR}"
+            cp -r target/universal/stage/* "${OUTPUT_DIR}"
+
+      - persist_to_workspace:
+          root: /tmp/output
+          paths:
+            - myservice
+
+  push:
+    docker:
+      - image: circleci/openjdk:8
+    steps:
+      - attach_workspace:
+          at: /tmp/output
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          name: Build and tag image
+          command: |
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker-registry.speedledger.net
+            docker build -t docker-registry.speedledger.net/myservice:$CIRCLE_BRANCH /tmp/output/myservice
+            docker tag docker-registry.speedledger.net/myservice:$CIRCLE_BRANCH docker-registry.speedledger.net/myservice:$CIRCLE_SHA1
+
+      - run:
+          name: Push image
+          command: |
+            docker push docker-registry.speedledger.net/myservice:$CIRCLE_BRANCH
+            docker push docker-registry.speedledger.net/myservice:$CIRCLE_SHA1
+
+
+  reg-build:
+    docker:
+      - image: $DOCKER_REGISTRY/spl:master
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    steps:
+      - run:
+          name: Register builds in samson
+          command: |
+            spl samson register-build
+            spl samson trigger-webhook
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context: org-global
+      - push:
+          context: org-global
+          requires:
+            - build
+      - reg-build:
+          context: org-global
+          requires:
+            - push

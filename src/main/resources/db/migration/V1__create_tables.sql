@@ -1,0 +1,17 @@
+SET SCHEMA 'myservice';
+
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS todo
+(
+    id         SERIAL PRIMARY KEY,
+    title      TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO todo
+(title)
+VALUES
+('hello world!');
+
+COMMIT TRANSACTION;
