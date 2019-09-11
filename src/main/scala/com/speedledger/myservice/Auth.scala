@@ -20,10 +20,13 @@ object Auth extends Http4sDsl[IO] with Codecs {
   })*/
 
   val authSession: Kleisli[IO, Request[IO], Either[String, Unit]] = Kleisli({ req =>
-    IO(for {
-
-      param <- req.params.get("token").toRight("Found no Token")
-    } yield if(param=="kaffe")Right else Left ("invalid"))
+    IO {
+      req.params.get("token") match {
+        case Some("kaffe") =>Right()
+        case Some(_) => Left("Token invalid")
+        case None =>Left("No token")
+      }
+    }
   })
 
 

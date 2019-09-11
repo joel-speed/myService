@@ -80,7 +80,7 @@ object AppServer extends Migrations {
       client = BlazeClientBuilder[IO](global).resource
       db = makeDb(config.db)
       services = Router(
-        //"/" -> Auth.middleware(HelloAuthService().service),
+        "/" -> Auth.middleware(HelloAuthService().service),
         "/" -> HelloWorldService(db).service,
         "/" -> HealthService().service
       ).orNotFound
