@@ -76,11 +76,11 @@ object AppServer extends Migrations {
       _<- applyToken(config.token)
 
 
-
+      auth = Auth(config.token.password)
       client = BlazeClientBuilder[IO](global).resource
       db = makeDb(config.db)
       services = Router(
-        "/" -> Auth.middleware(HelloAuthService().service),
+        "/" -> auth.middleware(HelloAuthService().service),
         "/" -> HelloWorldService(db).service,
         "/" -> HealthService().service
       ).orNotFound
