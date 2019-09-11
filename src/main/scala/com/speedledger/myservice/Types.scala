@@ -7,6 +7,8 @@ object Types {
 
   case class DbConfig(connection: String, user: String, password: String)
 
-  case class Config(httpServer: HttpConfig, db: DbConfig, logging: LoggingConfig)
+  case class TokenConfig(password: String)
+
+  case class Config(httpServer: HttpConfig, db: DbConfig, logging: LoggingConfig,token: TokenConfig)
   case class ErrorResponse(statusMessage: String)
 }

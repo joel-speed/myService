@@ -13,8 +13,14 @@ import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.util.CaseInsensitiveString
 import org.json4s.native.JsonMethods
 
+import cats._, cats.effect._, cats.implicits._, cats.data._
+import org.http4s._
+import org.http4s.dsl.io._
+import org.http4s.implicits._
+import org.http4s.server._
 
 
+case class User(token: String)
 case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
 
   implicit val todoDecoder: Decoder[Todo] = deriveDecoder
@@ -22,6 +28,7 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
 
   object TokenQueryParamMatcher extends QueryParamDecoderMatcher[String]("token")
   object PayloadQueryParamMatcher extends QueryParamDecoderMatcher[String]("text")
+
 
 
 
@@ -37,13 +44,13 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
       Ok("Hej")
 
     case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) =>
-      println(slackToken)
-      print(req.headers)
 
-      db.getCustomerBySwbId(payload.toInt).flatMap {
-        case Some(todo) =>{ Ok(todo.asJson)}
-        case _          => NotFound()
-      }
+
+        db.getCustomerBySwbId(payload.toInt).flatMap {
+          case Some(todo) => Ok(todo.asJson)
+          case _ => NotFound()
+        }
+
 
     case req @ GET -> Root / "hellodbemail" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) =>
 

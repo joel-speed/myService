@@ -2,7 +2,7 @@ package com.speedledger.myservice
 
 import cats.data.{Kleisli, OptionT}
 import cats.effect.IO
-import com.speedledger.myservice.Types.ErrorResponse
+import com.speedledger.myservice.Types.{ErrorResponse, TokenConfig}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.AuthMiddleware
 import org.http4s.util.CaseInsensitiveString
@@ -10,6 +10,7 @@ import org.http4s.{AuthedService, Request}
 
 object Auth extends Http4sDsl[IO] with Codecs {
   val authHeaderName = CaseInsensitiveString("SpeedLedger-Session-Auth")
+
 
   /*val authSession: Kleisli[IO, Request[IO], Either[String, SpeedLedgerSession]] = Kleisli({ req =>
     IO(for {
@@ -20,8 +21,9 @@ object Auth extends Http4sDsl[IO] with Codecs {
 
   val authSession: Kleisli[IO, Request[IO], Either[String, Unit]] = Kleisli({ req =>
     IO(for {
-      header <- req.headers.get(authHeaderName).toRight("Found no speedledger session header")
-    } yield if(header.value.equals("fooBar"))Right else Left ("invalid"))
+
+      param <- req.params.get("token").toRight("Found no Token")
+    } yield if(param=="kaffe")Right else Left ("invalid"))
   })
 
 
@@ -36,6 +38,8 @@ object Auth extends Http4sDsl[IO] with Codecs {
       case _ => None
     }
   }
+
+
 
   final case class SpeedLedgerSession(dataOrgId: Long,
     prodPart: String,
