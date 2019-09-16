@@ -57,12 +57,6 @@ object AppServer extends Migrations {
     }
   }
 
-  private def applyToken(tokenConfig: TokenConfig): IO[Unit] = {
-    IO.pure {
-      println(tokenConfig.password)
-    }
-  }
-
   def loadConfig(): IO[Config] =
     assertRight(pureconfig.loadConfig[Config])(_.toList.map(_.toString).mkString(", "))
 
@@ -73,7 +67,6 @@ object AppServer extends Migrations {
       _ <- IO(logger.info(s"starting server on ${config.httpServer.port}"))
       _ <- databaseMigrations(config.db)
       _ <- applyLoggingBeanSettings(config.logging)
-      _<- applyToken(config.token)
 
 
       auth = Auth(config.token.password)

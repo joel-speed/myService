@@ -12,12 +12,16 @@ import cats.data.ValidatedNel
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.util.CaseInsensitiveString
 import org.json4s.native.JsonMethods
-
-import cats._, cats.effect._, cats.implicits._, cats.data._
+import cats._
+import cats.effect._
+import cats.implicits._
+import cats.data._
 import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server._
+
+import scala.tools.nsc.doc.html.page.JSONArray
 
 
 case class User(token: String)
@@ -36,12 +40,20 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ GET -> Root / "helloworld" =>
-      //val postmanToken= req.headers.get(CaseInsensitiveString("Postman-Token"))
-      val json = Json.obj("hello" -> Json.fromString("world"))
 
-      print(req.headers)
+      val firstArray: Json = Json.fromValues(List(
+        Json.fromFields(List(("title", Json.fromString("Name")),
+          ("value",Json.fromString("Pelle")),("short",Json.fromString("true"))))
+      ))
 
-      Ok("Hej")
+      val jsonArray: Json = Json.fromValues(List(
+        Json.fromFields(List(("fields", firstArray)))
+      ))
+
+      val json = Json.obj("attachments" -> jsonArray)
+
+
+      Ok(json)
 
     case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) =>
 
