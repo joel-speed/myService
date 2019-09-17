@@ -7,6 +7,7 @@ import org.http4s._
 import io.circe._
 import org.http4s.circe._
 import io.circe.syntax._
+import io.circe.literal._
 import io.circe.generic.semiauto._
 import cats.data.ValidatedNel
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
@@ -33,33 +34,39 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
   object TokenQueryParamMatcher extends QueryParamDecoderMatcher[String]("token")
   object PayloadQueryParamMatcher extends QueryParamDecoderMatcher[String]("text")
 
-
-
+  def tupleToJson(T:(String,String)):Json = {
+    json"""{
+          "title":${T._1},
+          "value":${T._2},
+          "short":true
+          }"""
+  }
 
 
 
   val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
     case req @ GET -> Root / "helloworld" =>
 
-      val firstArray: Json = Json.fromValues(List(
-        Json.fromFields(List(("title", Json.fromString("Name")),
-          ("value",Json.fromString("Pelle")),("short",Json.fromString("true"))))
-      ))
+      Ok("hej hej")
 
-      val jsonArray: Json = Json.fromValues(List(
-        Json.fromFields(List(("fields", firstArray)))
-      ))
-
-      val json = Json.obj("attachments" -> jsonArray)
-
-
-      Ok(json)
-
-    case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) =>
+    case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) =>
 
 
         db.getCustomerBySwbId(payload.toInt).flatMap {
-          case Some(todo) => Ok(todo.asJson)
+
+          case Some(todo) => {
+
+            val jsonItemArray = Map("Project"->"Awsome","Environment"->"production").map(tupleToJson).asJson
+
+            val jsonFieldsArray: Json = Json.fromValues(List(
+             Json.fromFields(List(("fields", jsonItemArray)))))
+
+            val json = Json.obj("attachments" -> jsonFieldsArray)
+
+            Ok(json)
+
+          }
+
           case _ => NotFound()
         }
 
