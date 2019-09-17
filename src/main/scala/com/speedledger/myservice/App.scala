@@ -74,7 +74,7 @@ object AppServer extends Migrations {
       db = makeDb(config.db)
       services = Router(
         "/" -> auth.middleware(HelloAuthService().service),
-        "/" -> HelloWorldService(db).service,
+        "/" -> auth.middleware(HelloWorldService(db).service),
         "/" -> HealthService().service
       ).orNotFound
       server <- BlazeServerBuilder[IO]

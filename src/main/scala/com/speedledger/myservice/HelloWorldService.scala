@@ -44,19 +44,18 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
 
 
 
-  val service: HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ GET -> Root / "helloworld" =>
+  val service: AuthedService[Unit, IO] = AuthedService[Unit, IO] {
+    case req @ GET -> Root / "helloworld" as _ =>
 
       Ok("hej hej")
 
-    case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) =>
-
+    case req @ GET -> Root / "hellodbswb" :? PayloadQueryParamMatcher(payload) as _ =>
 
         db.getCustomerBySwbId(payload.toInt).flatMap {
 
           case Some(todo) => {
 
-            val jsonItemArray = Map("Project"->"Awsome","Environment"->"production").map(tupleToJson).asJson
+            val jsonItemArray = Map("Title"->todo.title,"Org-Number"->todo.Org_Num).map(tupleToJson).asJson
 
             val jsonFieldsArray: Json = Json.fromValues(List(
              Json.fromFields(List(("fields", jsonItemArray)))))
@@ -64,14 +63,13 @@ case class HelloWorldService(db: Database) extends Http4sDsl[IO] {
             val json = Json.obj("attachments" -> jsonFieldsArray)
 
             Ok(json)
-
           }
 
           case _ => NotFound()
         }
 
 
-    case req @ GET -> Root / "hellodbemail" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) =>
+    case req @ GET -> Root / "hellodbemail" :? PayloadQueryParamMatcher(payload) :? TokenQueryParamMatcher(slackToken) as _ =>
 
       db.getCustomerByEmail(payload).flatMap {
         case Some(todo) =>{ Ok(todo.asJson)}
